@@ -1,0 +1,249 @@
+/*
+Objet: Algo Num tp1
+Date: 11 mars 2019
+
+Tristan Seuret
+Nathan Latino
+Jonas Vallat
+Sol Rosca
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+}
+
+#app {
+    /*padding-bottom: 400px;*/
+}
+
+section {
+    margin: 10px 20px 10px 20px !important;
+}
+
+.header {
+    padding: 30px 0 50px 0;
+    text-align: center;
+    background: white;
+}
+
+.header h1 {
+    font-size: 50px;
+}
+
+.header h1 .manager {
+    color: var(--orange);
+}
+
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 30px;
+}
+
+.reset-btn {
+    /*margin-bottom: 20px;*/
+}
+
+.bits-selection {
+    margin-left: -165px;
+}
+
+.bits-selection .button {
+    border: 0;
+}
+
+.bits-selection .is-selected {
+    border: 1px solid var(--blue) !important;
+}
+
+.bits-selection .is-selected:hover {
+    background-color: transparent !important;
+    color: var(--blue) !important;
+    cursor: default;
+}
+
+.tests-link {
+
+}
+
+.data-area {
+    width: auto
+}
+
+
+.data-line {
+    margin: 10px auto 10px auto !important;
+}
+
+
+.data-labels {
+    display: flex;
+    justify-content: flex-end;
+    margin: 4px auto 4px auto;
+}
+
+@media screen and (max-width: 768px) {
+    .data-labels {
+        justify-content: flex-start;
+    }
+}
+
+.data-label {
+    border-radius: 2px 0 0 2px;
+    margin-right: -1px;
+}
+
+.data-input {
+    margin: 4px auto 4px auto;
+}
+
+.input {
+    border-radius: 0;
+}
+
+.result{
+    cursor: default;
+    color: #7a7a7a;
+    background-color: rgba(245, 245, 245, 0.68);
+}
+
+.result:hover {
+    border-color: #dbdbdb;
+}
+
+.result:focus {
+    border-color: #dbdbdb;
+}
+
+a. button {
+    border-radius: 0 2px 2px 0;
+}
+
+.ieee-detail {
+    display: flex;
+    justify-content: center;
+}
+
+.ieee-detail h5 {
+    user-select: none;
+}
+
+.sign {
+    text-align: center;
+    margin-right: 20px;
+    width: 20px;
+}
+
+
+.exponent {
+    text-align: center;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.hidden-bit-dot-mantissa {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.hidden-bit {
+    text-align: center;
+    font-weight: bold;
+}
+
+.hidden-bit .display{
+    color: var(--red);
+    width: 20px;
+    background-color: #dbdbdb;
+    margin-left: auto;
+}
+
+.dot {
+    width: 1px;
+    text-align: left;
+    margin-top: 5px;
+    padding-left: 5px;
+    padding-right: 10px;
+    font-weight: bolder;
+}
+
+.mantissa {
+    text-align: center;
+    margin-right: auto;
+}
+
+.mantissa .display {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.display {
+    border: 1px solid black;
+}
+
+.converted-value {
+    font-weight: bolder;
+    color: var(--blue);
+}
+
+.opperation-selection {
+    display: flex;
+    /*justify-content: flex-end;*/
+    /*position: absolute;*/
+}
+
+.vertical {
+    flex-direction: column;
+    position: absolute;
+    left: 49%;
+    top: 26.5%;
+}
+
+.horizontal {
+    flex-direction: row;
+    justify-content: center;
+    margin-left: 30px;
+}
+
+
+.opperation-selection {
+}
+
+.opperation-selection .button {
+    border: 0;
+    border-radius: 0;
+}
+
+.opperation-selection .is-selected {
+    border: 1px solid var(--blue) !important;
+}
+
+.opperation-selection .is-selected:hover {
+    background-color: transparent !important;
+    color: var(--blue) !important;
+}
+
+.equals-sign {
+    display: flex;
+    color: var(--blue);
+    font-size: 25px;
+}
+
+
+.eq-vertical {
+    justify-content: flex-start;
+    margin: -20px auto -20px -40px;
+}
+
+.eq-horizontal {
+    justify-content: center;
+    margin-left: 30px;
+}

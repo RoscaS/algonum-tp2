@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="static/css/bulma/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/fontAwesome/css/all.min.css">
+  <link rel="stylesheet" href="static/css/variables.css">
+  <link rel="stylesheet" href="static/css/main.css">
+  <script src="static/js/vue.js"></script>
+  <title>AlgoNum: tp1</title>
+</head>
+<body>
+
+
+<div id="app">
+
+
+  <div class="header">
+    <h1><span class="manager">Algo'</span>num</h1>
+    <p>Tp1: Codage de nombres & IEEE754-2008</p>
+  </div>
+
+
+  <section>
+    <div class="top-nav">
+      <div>
+        <button class="button is-danger reset-btn" @click="resetAll()">
+          Reset &nbsp;
+          <i class="fas fa-fw fa-exclamation-circle"></i>
+        </button>
+        <button class="button is-info" @click="showModal()">
+          À propos &nbsp;
+          <i class="fas fa-fw fa-map"></i>
+        </button>
+        <button class="button reset-btn"
+                :class="verbose ? 'is-success' : 'is-info is-outlined'"
+                @click="toggleVerbose()">
+          Verbose &nbsp;
+          <i class="fas fa-fw fa-info-circle"></i>
+        </button>
+      </div>
+
+      <div class="bits-selection">
+        <div class="buttons has-addons">
+          <span v-for="i in ranges"
+                @click="setBitSize(i.bits)"
+                class="is-outlined button is-info"
+                :class="{'is-selected':bits.bits == i.bits}">
+            {{ i.bits }}b
+          </span>
+        </div>
+      </div>
+
+      <div class="tests-link">
+        <ul>
+          <li>
+            <a class="is-pulled-right" @click="fireTests()">
+              Lancer les tests &nbsp;
+              <i class="fas fa-vial"></i>
+            </a>
+          </li>
+          <li>
+            <a class="is-pulled-right" @click="firePi()">
+              Approximation de Pi
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <section>
+    <div class="columns is-multiline is-centered is-variable is-8">
+      <div v-for="area in areas" class="column" :class="bits.bits == 128 ? 'is-12' : 'is-6'">
+        <div class="box data-area">
+
+          <div class="columns is-mobile">
+
+            <div class="column is-11" :style="!verbose ? 'height: 75px' : ''">
+              <div v-for="field in area.fields">
+                <div class="columns is-gapless data-line">
+
+                  <div class="column is-2 data-labels">
+                    <a class="button is-static data-label" v-if="verbose" :class="inputsSize">
+                      {{ field.name }}:
+                    </a>
+                  </div>
+
+                  <div class="column is-10">
+                    <p v-if="field.name === 'Valeur'" class="control">
+                      <input class="input "
+                             :class="[inputsSize, {'is-danger':area.invalid}, {'result':area.id === 'C'}]"
+                             v-model="area.input"
+                             :readonly="area.id === 'C'"
+                             type="number" step="0.1" placeholder="ex. 263.3">
+                    </p>
+                    <p v-else-if="verbose" class="control">
+                      <input class="input result"
+                             :class="inputsSize"
+                             :value="field.value"
+                             type="text"
+                             readonly>
+                    </p>
+                  </div>
+
+                  <div class="column is-1">
+                    <p v-if="field.name === 'Valeur'" class="control">
+                      <a class="button is-static" :class="inputsSize">
+                        {{ field.size }}
+                      </a>
+                    </p>
+                    <p v-if="field.name === 'IEEE754' && verbose" class="control">
+                      <a class="button is-info"
+                         :class="inputsSize"
+                         @click="binaryToClipboard(field.value)">
+                        <i class="far fa-copy"></i>
+                      </a>
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ieee-detail content" :class="inputsSize">
+            <div class="sign">
+              <h5 class="is-bold">S</h5>
+              <p class="display">{{area.sign}}</p>
+              <p class="converted-value" v-if="area.sign">
+                <i v-if="area.sign === '1'" class="fas fa-minus"></i>
+                <i v-else class="fas fa-plus"></i>
+              </p>
+            </div>
+            <div class="exponent">
+              <h5 class="is-bold">Exponsant</h5>
+              <p class="display">{{area.exponent}}</p>
+              <p class="converted-value" v-if="area.exponent">{{ eBitNumber(area) }}</p>
+            </div>
+            <div class="hidden-bit-dot-mantissa">
+              <div class="hidden-bit">
+                <h5 class="is-bold is-invisible">hidden</h5>
+                <p class="display">{{ hiddenBitValidation(area.input) }}</p>
+                <p class=""></p>
+              </div>
+              <div class="dot">
+                <h5 class="is-bold is-invisible">hidden</h5>
+                <p class="">.</p>
+                <p class=""></p>
+              </div>
+              <div class="mantissa">
+                <h5 class="is-bold">Mantisse</h5>
+                <p class="display">{{area.mantissa}}</p>
+                <p class="converted-value" v-if="area.mantissa"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="area.id === 'A'" class="opperation-selection buttons has-addons"
+             :class="bits.bits == '128' ? 'horizontal' : 'vertical'">
+          <span v-for="i in opperations"
+                @click="setOpperation(i)"
+                class="is-outlined button"
+                :class="[{'is-selected':opperation == i}, opperationBtnColor]">
+            <i class="fas" :class="`fa-${i}`"></i>
+          </span>
+        </div>
+
+        <div v-if="area.id === 'B' && opperation"
+             class="equals-sign"
+             :class="bits.bits == '128' ? 'eq-horizontal' : 'eq-vertical'">
+          <span>
+            <i class="fas fa-equals"></i>
+          </span>
+        </div>
+
+
+      </div>
+    </div>
+  </section>
+
+
+  <div class="modal content" :class="{'is-active': bordel}">
+    <div class="modal-background"></div>
+    <div class="modal-content box">
+      <h2>Algorithmes numériques:</h2>
+      <h3>Codage de nombres & IEEE754-2008</h3>
+      <small style="float: right;">11 mars 2019</small>
+      <p style="font-weight: bold">Réalisé par (INF2b):</p>
+      <ul>
+        <li>Nathan Latino</li>
+        <li>Tristan Seuret</li>
+        <li>Jonas</li>
+        <li>Sol Rosca</li>
+      </ul>
+      <h5>Contextualisation</h5>
+      <p>
+        Ce TP traite du codage de nombres réels. Le cahier des charges était le suivant:
+      </p>
+        <ul>
+          <li><span style="color:green">Coder les floatants pour un nombre flottant sur m bits donnés par l’utilisateur.</span> <span style="color:red">La valeur de d est à trouver à la volée</span></li>
+          <li><span style="color:green">Implémentez l’addition</span></li>
+          <li><span style="color:green">Implémentez soustraction,multiplication, division etpuissance</span></li>
+          <li><span style="color:green">Trouvez une approximation de π</span></li>
+        </ul>
+      <h5>Méthodologie de développement</h5>
+      <p>
+        Dans un premier temps l'idée était de cerner le fonctionnement de la norme IEEE754 et sa révision de 2008.
+        Une fois le problème assimilé, un premier jet d'implémentation des différentes étapes a rendu possible l'établissement d'une architecture logiciel
+        plus adaptée au problème. À partir de là les ajouts ont été incrémentaux:
+      </p>
+      <ul>
+        <li>Implémentation de la conversion basique</li>
+        <li>Mise au point d'une série de tests contre des valeurs générés par <a href="https://babbage.cs.qc.cuny.edu/IEEE-754/">ce convertisseur en ligne</a></li>
+        <li>Implémentation de l'addition</li>
+        <li>Implémentation de l'multiplication</li>
+        <li>Implémentation de l'division</li>
+        <li>Implémentation de l'soustraction</li>
+        <li>Developpement de l'interface</li>
+        <li>Approximation de Pi</li>
+        <li>Réaliser que le nombre de bits codables étaint dynamique et non statiques</li>
+      </ul>
+      <h5>Conclusion</h5>
+
+      <p>
+        Ce projet fut particulièrement interessant, conceptuellement, mais aussi au niveau du codage
+        qui est probablement le code le plus "technique" et le plus soutenu au niveau du besoin de cohérence
+        des choix faits. Malheureusement les contraintes de temps ne nous ont pas permis de faire une
+        dernière itération de refactor du code qui sera probablement faite après la remise du projet
+        pour le sport et sera trouvable sur le <a href="https://github.com/RoscaS/algonum-tp1">répo github du projet</a>.
+        Pour la même raison ce rapport n'est qu'une ébauche et nous nous en excusons.
+      </p>
+
+      <h5>Sources</h5>
+      <ul style="margin-bottom: 50px">
+        <li>Cours du prof Gobron</li>
+        <li><a href="https://en.wikipedia.org/wiki/IEEE_754">Wikipedia</a></li>
+        <li><a href="https://www.exploringbinary.com/correct-decimal-to-floating-point-using-big-integers/">exploringbinary.com</a></li>
+        <li><a href="http://sandbox.mc.edu/~bennet/cs110/flt/dtof.html">sandbox.mc.edu: float to decimal</a></li>
+        <li><a href="http://sandbox.mc.edu/~bennet/cs110/flt/ftod.html">sandbox.mc.edu: decimal to float</a></li>
+        <li><a href="https://www.youtube.com/watch?v=8afbTaA-gOQ">India rules</a></li>
+        <li><a href="https://www.youtube.com/watch?v=LXF-wcoeT0o">Really they do</a></li>
+        <li><a href="https://www.h-schmidt.net/FloatConverter/IEEE754.html">Premier convertisseur</a></li>
+        <li><a href="https://babbage.cs.qc.cuny.edu/IEEE-754/">Second convertisseur (rounding variantes)</a></li>
+        <li><a href="https://google.com">Le bon vieux Google</a></li>
+      </ul>
+
+    </div>
+    <button class="modal-close is-large" aria-label="close" @click="hideModal()">
+    </button>
+  </div>
+
+
+</div>
+
+
+<script src="static/js/bigInteger.min.js"></script>
+<script src="core/constant.js"></script>
+<script src="core/helpers.js"></script>
+<script src="core/tools.js"></script>
+<script src="core/Binary.js"></script>
+<script src="core/test.js"></script>
+<script src="core/main.js"></script>
+<script src="vueApp.js"></script>
+<script src="core/Line.js"></script>
+</body>
+</html>
