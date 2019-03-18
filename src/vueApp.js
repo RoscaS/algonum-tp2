@@ -1,6 +1,6 @@
 /*
-Objet: Algo Num tp1
-Date: 11 mars 2019
+Objet: Algo Num tp2
+Date: 16 mars 2019
 
 Tristan Seuret
 Nathan Latino
@@ -11,199 +11,113 @@ Sol Rosca
 let app = new Vue({
   el: '#app',
   data: () => ({
-    bordel: false,
-    ranges: RANGES,
-    bits: RANGES['32'],
-    opperations: OPPERATIONS,
-    opperation: '',
-    opperationBtnColor: 'is-info',
-    areas: [],
-    areaA: areaObjectBuilder('A'),
-    areaB: areaObjectBuilder('B'),
-    areaC: areaObjectBuilder('C'),
-    inputsSize: 'is-normal',
-    verbose: true,
+
+    functions: FUNCTIONS,
+    func: DEFAULT_FUNCTION,
+    precision: DEFAULT_PRECISSION,
+
+    lines: [],
+    steps: [],
+    roots: [],
+    idx: 0,
+
+    a: DEFAULT_a,
+    A: null,
+
+    plot: null,
+    newton: null,
+
+    showNext: false,
+    input: true,
+    modal: false,
+
   }),
   watch: {
-    'areaA.input': {
-      handler: function (val) {
-        this.updateFields(this.areaA, val);
-      },
-    },
-    'areaB.input': {
-      handler: function (val) {
-        this.updateFields(this.areaB, val);
-      },
-    },
-    'areaC.input': {
-      handler: function (val) {
-        this.updateFields(this.areaC, val);
-      },
-    },
-    opperation: {
-      handler: function (val, oldVal) {
-      },
-    },
-  },
-
-  methods: {
-    showModal() {
-      this.bordel = true;
-    },
-    hideModal() {
-      this.bordel = false;
-    },
-    getArea(id) {
-      return this.areas.filter(area => area.id === id)[0];
-    },
-
-    updateFields(area, value) {
-
-      if (REGEX.zeroDotZeros.test(value)) {
-        if (!REGEX.zeroDotZerosNbrs.test(value)) {
-          value = '0';
-        }
-      }
-
-      if (value === '0.0') value = '0';
-
-      if (this.validInput(value)) {
-        area.bin = new Binary(value, this.bits.bits);
-        area.invalid = false;
-      } else {
-        area.invalid = true;
-        // this.reset(area);
-        // this.invalidOpperation();
+    a(value) {
+      if (value < -100) {
+        this.a = -100;
         return;
       }
-      area.fields[1].value = area.bin.storedValue;
-      area.fields[2].value = area.bin.conversionError;
-      area.fields[3].value = area.bin.IEEE754;
-
-      area.fields[0]['size'] = value.length;
-
-      area.sign = area.fields[3].value.slice(0, 1);
-      area.exponent = area.fields[3].value.slice(1, 9);
-      area.mantissa = area.fields[3].value.slice(9);
-      this.updateAreaC();
+      if (value > 100) {
+        this.a = 100;
+        return;
+      }
+      this.a = parseFloat(value);
+      this.update_a(value);
     },
+    precision(value) {
+      if (value < 0) {
+        this.precision = 0;
+      }
+      if (value > 10) {
+        this.precision = 10;
+      }
+      this.setPrecision();
+    },
+  },
+  methods: {
+    start() {
+      this.showVerticalHelper();
+      this.plot.showTan();
+      this.showNext = true;
+      this.input = false;
+      this.idx = 0;
 
-    updateAreaC() {
-      if (this.opperationIsValid()) {
-        let result = '';
-
-        switch (this.opperation) {
-
-          case 'minus':
-            result = this.areaA.bin.minus(this.areaB.bin);
-            break;
-          case 'divide':
-            result = this.areaA.bin.divide(this.areaB.bin);
-            break;
-          case 'times':
-            result = this.areaA.bin.multiply(this.areaB.bin);
-            break;
-          case 'plus':
-            result = this.areaA.bin.add(this.areaB.bin);
-            break;
-        }
-        this.areaC.input = result.value;
-
+      this.newton.set_a(this.a);
+      this.setPrecision();
+      this.lines = this.newton.findRoot();
+    },
+    next() {
+      if (this.idx < this.lines.length) {
+        let line = this.lines[this.idx];
+        this.steps.push({a: this.a, A: line.A});
+        this.a = line.A;
+        this.update_a();
+        this.idx++;
       } else {
-        this.invalidOpperation();
+        this.showNext = false;
       }
     },
-    validInput(value) {
-      let validNumber = REGEX.validNumber.test(value);
-      // let leadingZeros = REGEX.leadingZeros.test(value);
-      return validNumber;
+    reset() {
+      this.a = DEFAULT_a;
+      this.idx = 0;
+      this.steps = [];
+      this.lines = [];
+      this.showNext = false;
+      this.input = true;
     },
-    opperationIsValid() {
-      let validInputs = !this.areaA.invalid && !this.areaB.invalid;
-      let notEmpty = this.areaA.input && this.areaB.input;
-      return validInputs && notEmpty && this.opperation;
+    update_a() {
+      this.plot.update_a(this.a);
     },
-    setOpperation(opperation) {
-      this.opperation = this.opperation === opperation ? '' : opperation;
-
-      if (this.opperationIsValid()) {
-        this.updateAreaC();
-        if (this.areas.length === 2) {
-          this.areas.push(this.areaC);
-        }
-      } else {
-        this.invalidOpperation();
-      }
+    showVerticalHelper() {
+      this.plot.showVerticalHelper();
     },
-    invalidOpperation() {
-      if (this.opperation) this.userWarning();
-      this.areas = this.areas.slice(0, 2);
-      this.opperation = '';
+    showTan() {
+      this.plot.showTan();
     },
-    userWarning() {
-      if (this.areaA.input === '') this.areaA.invalid = true;
-      if (this.areaB.input === '') this.areaB.invalid = true;
-      this.opperationBtnColor = 'is-danger';
-      setTimeout(() => {
-        this.opperationBtnColor = 'is-info';
-      }, 200);
+    setFunction(func) {
+      this.func = func;
+      this.a = DEFAULT_a;
+      this.plot.setFunction(this.func.desmos);
+      this.newton.setFunction(this.func.expression);
     },
-    reset(area) {
-      area.bin = new Binary('0', this.bits.bits);
-      area.input = '';
-      area.fields[1].value = null;
-      area.fields[2].value = null;
-      area.fields[3].value = null;
-      area.fields[0]['size'] = null;
-      area.sign = 0;
-      area.exponent = 0;
-      area.mantissa = 0;
+    setPrecision() {
+      this.newton.setPrecision(this.precision ** -10);
     },
-    resetAll() {
-      this.areas = [];
-      this.areaA = areaObjectBuilder('A');
-      this.areaB = areaObjectBuilder('B');
-      this.areas.push(this.areaA);
-      this.areas.push(this.areaB);
-      this.opperation = '';
+    showModal() {
+      this.setPrecision();
+      this.roots = this.newton.findAllRoots();
+      this.modal = true;
     },
-    fireTests() {
-      let tests = Binary.tests();
-      tests.print(verbose = true);
-      alert('F12 pour afficher la console.');
+    hideModal() {
+      this.modal = false;
     },
-    firePi() {
-      let pi = approximatePi();
-      pi.print();
-      alert('F12 pour afficher la console.');
-    },
-    eBitNumber(area) {
-      let value = parseInt(area.bin.eBitNumber);
-      return value > 0 ? `+${value}` : value;
-    },
-    setBitSize(value) {
-      this.bits = this.ranges[value];
-      this.inputsSize = this.bits.bits == 64 ? 'is-small' : 'is-normal';
-      this.resetAll();
-    },
-    toggleVerbose() {
-      this.verbose = !this.verbose;
-    },
-    binaryToClipboard(text) {
-      copyToClipboard(text);
-      alert('Ajouté au presse-papier !');
-    },
-    hiddenBitValidation(value) {
-      let a = ['+0', '-0', '0', '0.0'].includes(value);
-      let b = value.startsWith('0.0') && !/[1-9]/.test(value);
-      return a || b ? '1' : '0';
-    },
-
 
   },
   created() {
-    this.areas.push(this.areaA);
-    this.areas.push(this.areaB);
+    this.plot = new Plot(this.func.desmos);
+    this.newton = new NewtonTangent();
+
   },
 });
 

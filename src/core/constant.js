@@ -1,6 +1,6 @@
 /*
-Objet: Algo Num tp1
-Date: 11 mars 2019
+Objet: Algo Num tp2
+Date: 16 mars 2019
 
 Tristan Seuret
 Nathan Latino
@@ -8,150 +8,94 @@ Jonas Vallat
 Sol Rosca
 */
 
-const REGEX = {
-  validNumber: /^[-+]?[0-9]*\.?[0-9]+$/,
-  leadingZeros: /\b0{2,}/,
-  zeroDotZeros: /\b0\.0+/,
-  zeroDotZerosNbrs: /\b0\.0+[1-9]+/,
+const FUNCTIONS = [
+  // {
+  //   expression: x => x** 2,
+  //   desmos: 'f(x)=\\frac{1}{8}x^2'
+  // },
+  {
+    expression: x => x / (1 - x ** 2),
+    desmos: 'f(x)=\\frac{x}{1-x^2}',
+    simple: 'x/(1-x^2)'
+  },
+  {
+    expression: x => Math.sin(x) - (x/13),
+    desmos: 'f(x)=\\sin\\left(x\\right) - \\frac{x}{13}',
+    simple: 'sin(x) - x/13'
+  },
+];
 
+let DESMOS = {
+  options: {
+    zoomButtons: false,
+    expressions: false,
+    // border: false,
+    showGrid: false,
+    xAxisArrowMode: Desmos.AxisArrowModes.POSITIVE,
+    yAxisArrowMode: Desmos.AxisArrowModes.POSITIVE
+  },
+  bounds: {
+    left: -4,
+    right: 10,
+    bottom: -2,
+    top: 6
+  },
+  p1: [
+    {
+      id: 'p1', // a
+      latex: 'P_1=\\left(a,\\ 0\\right)',
+      color: Desmos.Colors.GREEN,
+      dragMode: Desmos.DragModes.NONE,
+      pointStyle: Desmos.Styles.OPEN,
+      showLabel: true,
+      label: "a",
+    },
+
+  ],
+  verticalHelper: [
+    {
+      id: 'd1', // si f(x) > 0
+      latex: 'x=a\\left\\{0\\le y\\le f\\left(a\\right)\\right\\}',
+      color: Desmos.Colors.GREEN
+    },
+    {
+      id: 'd2', // si f(x) < 0
+      latex: 'x=a\\left\\{f\\left(a\\right)\\le y\\le0\\right\\}',
+      color: Desmos.Colors.GREEN
+    },
+    {
+      id: 'p2', // f(a)
+      latex: `P_2=\\left(a,\\ f\\left(a\\right)\\right)`,
+      color: Desmos.Colors.GREEN,
+      dragMode: Desmos.DragModes.NONE,
+      pointStyle: Desmos.Styles.OPEN,
+      showLabel: true,
+      label: "f(a)",
+    },
+  ],
+  tan: [
+    {
+      id: 'A', // intersection(tan, abscisse)
+      latex: 'A=-\\frac{f\\left(a\\right)}{f\'\\left(a\\right)}'
+    },
+    {
+      id: 'd_tan', // tangeante à f(x) en a
+      latex: 'T\\left(x\\right)\\ =\\ f\'\\left(a\\right)\\left(x-a\\right)+f\\left(a\\right)',
+      color: Desmos.Colors.RED,
+      lineStyle: Desmos.Styles.DOTTED
+    },
+    {
+      id: 'p3', // A
+      latex: 'P_3=\\left(-\\frac{f\\left(a\\right)}{f\'\\left(a\\right)}\\ +\\ a,0\\right)',
+      color: Desmos.Colors.RED,
+      dragMode: Desmos.DragModes.NONE,
+      pointStyle: Desmos.Styles.OPEN,
+      showLabel: true,
+      label: "A",
+    },
+  ]
 };
 
-const RANGES = {
-  '32': {
-    bits: 32,
-    mantissa: 23,
-    exponent: 8,
-    max: 127,
-  },
-  '64': {
-    bits: 64,
-    mantissa: 52,
-    exponent: 11,
-    max: 1023,
-  },
-  '128': {
-    bits: 128,
-    mantissa: 112,
-    exponent: 15,
-    max: 16383,
-  },
-};
-
-const OPPERATIONS = ['plus', 'minus', 'times', 'divide'];
-
-const TESTED_VALUES = {
-  '263.3': {
-    'nearest value': '01000011100000111010011001100110',
-    'towards zero': '01000011100000111010011001100110',
-    'towards +inf': '01000011100000111010011001100111',
-    'towards -inf': '01000011100000111010011001100110',
-  },
-  '849.45': {
-    'nearest value': '01000100010101000101110011001101',
-    'towards zero': '01000100010101000101110011001100',
-    'towards +inf': '01000100010101000101110011001101',
-    'towards -inf': '01000100010101000101110011001100',
-  },
-  '276.674': {
-    'nearest value': '01000011100010100101011001000110',
-    'towards zero': '01000011100010100101011001000101',
-    'towards +inf': '01000011100010100101011001000110',
-    'towards -inf': '01000011100010100101011001000101',
-  },
-  '26.3': {
-    'nearest value': '01000001110100100110011001100110',
-    'towards zero': '01000001110100100110011001100110',
-    'towards +inf': '01000001110100100110011001100111',
-    'towards -inf': '01000001110100100110011001100111',
-  },
-  '8.456': {
-    'nearest value': '01000001000001110100101111000111',
-    'towards zero': '01000001000001110100101111000110',
-    'towards +inf': '01000001000001110100101111000111',
-    'towards -inf': '01000001000001110100101111000110',
-  },
-  '0.674': {
-    'nearest value': '00111111001011001000101101000100',
-    'towards zero': '00111111001011001000101101000011',
-    'towards +inf': '00111111001011001000101101000100',
-    'towards -inf': '00111111001011001000101101000011',
-  },
-  '0.1': {
-    'nearest value': '00111101110011001100110011001101',
-    'towards zero': '00111101110011001100110011001100',
-    'towards +inf': '00111101110011001100110011001101',
-    'towards -inf': '00111101110011001100110011001100',
-  },
-  '-263.3': {
-    'nearest value': '11000011100000111010011001100110',
-    'towards zero': '11000011100000111010011001100110',
-    'towards +inf': '11000011100000111010011001100111',
-    'towards -inf': '11000011100000111010011001100110',
-  },
-  '-849.45': {
-    'nearest value': '11000100010101000101110011001101',
-    'towards zero': '11000100010101000101110011001100',
-    'towards +inf': '11000100010101000101110011001101',
-    'towards -inf': '11000100010101000101110011001100',
-  },
-  '-276.674': {
-    'nearest value': '11000011100010100101011001000110',
-    'towards zero': '11000011100010100101011001000101',
-    'towards +inf': '11000011100010100101011001000110',
-    'towards -inf': '11000011100010100101011001000101',
-  },
-  '-26.3': {
-    'nearest value': '11000001110100100110011001100110',
-    'towards zero': '11000001110100100110011001100110',
-    'towards +inf': '11000001110100100110011001100111',
-    'towards -inf': '11000001110100100110011001100111',
-  },
-  '-8.456': {
-    'nearest value': '11000001000001110100101111000111',
-    'towards zero': '11000001000001110100101111000110',
-    'towards +inf': '11000001000001110100101111000111',
-    'towards -inf': '11000001000001110100101111000110',
-  },
-  '-0.674': {
-    'nearest value': '10111111001011001000101101000100',
-    'towards zero': '10111111001011001000101101000011',
-    'towards +inf': '10111111001011001000101101000100',
-    'towards -inf': '10111111001011001000101101000011',
-  },
-  '-0.1': {
-    'nearest value': '10111101110011001100110011001101',
-    'towards zero': '10111101110011001100110011001100',
-    'towards +inf': '10111101110011001100110011001101',
-    'towards -inf': '10111101110011001100110011001100',
-  },
-  '0.00000000000000000000000000000000000156': {
-    'nearest value': '00000100000001001011010111001011',
-    'towards zero': '00000100000001001011010111001010',
-    'towards +inf': '00000100000001001011010111001011',
-    'towards -inf': '00000100000001001011010111001010',
-  },
-  '1500001423526' : {
-    'nearest value': '01010011101011101001111110000111',
-    'towards zero':  '01010011101011101001111110000110',
-    'towards +inf':  '01010011101011101001111110000111',
-    'towards -inf':  '01010011101011101001111110000110',
-  },
-  '-0.00000000000000000000000000000000000156': {
-    'nearest value': '10000100000001001011010111001011',
-    'towards zero':  '10000100000001001011010111001010',
-    'towards +inf':  '10000100000001001011010111001011',
-    'towards -inf':  '10000100000001001011010111001010',
-  },
-  '-1500001423526' : {
-    'nearest value': '11010011101011101001111110000111',
-    'towards zero':  '11010011101011101001111110000110',
-    'towards +inf':  '11010011101011101001111110000111',
-    'towards -inf':  '11010011101011101001111110000110',
-  }
-
-};
-
-LIMIT = 500000;
-const MAX_ITERATION = 4;
-const ONE_SIXTEENTH = "0.0625";
-const SPECIAL_VALUES = ['0', '+0', '-0'];
+const DEFAULT_a = 4;
+const DEFAULT_PRECISSION = 10;
+const DEFAULT_FUNCTION = FUNCTIONS[1];

@@ -1,3 +1,12 @@
+<!--Objet: Algo Num tp2-->
+<!--Date: 16 mars 2019-->
+
+<!--Tristan Seuret-->
+<!--Nathan Latino-->
+<!--Jonas Vallat-->
+<!--Sol Rosca-->
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,267 +14,209 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="static/css/bulma/css/bulma.min.css">
-  <link rel="stylesheet" href="static/css/fontAwesome/css/all.min.css">
-  <link rel="stylesheet" href="static/css/variables.css">
   <link rel="stylesheet" href="static/css/main.css">
+
+  <script src="https://www.desmos.com/api/v1.2/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+
   <script src="static/js/vue.js"></script>
-  <title>AlgoNum: tp1</title>
+
+
+  <title>AlgoNum: tp2</title>
 </head>
 <body>
 
-
-<div id="app">
-
-
-  <div class="header">
-    <h1><span class="manager">Algo'</span>num</h1>
-    <p>Tp1: Codage de nombres & IEEE754-2008</p>
-  </div>
+<div class="container">
+  <div class="content">
 
 
-  <section>
-    <div class="top-nav">
-      <div>
-        <button class="button is-danger reset-btn" @click="resetAll()">
-          Reset &nbsp;
-          <i class="fas fa-fw fa-exclamation-circle"></i>
-        </button>
-        <button class="button is-info" @click="showModal()">
-          À propos &nbsp;
-          <i class="fas fa-fw fa-map"></i>
-        </button>
-        <button class="button reset-btn"
-                :class="verbose ? 'is-success' : 'is-info is-outlined'"
-                @click="toggleVerbose()">
-          Verbose &nbsp;
-          <i class="fas fa-fw fa-info-circle"></i>
-        </button>
-      </div>
-
-      <div class="bits-selection">
-        <div class="buttons has-addons">
-          <span v-for="i in ranges"
-                @click="setBitSize(i.bits)"
-                class="is-outlined button is-info"
-                :class="{'is-selected':bits.bits == i.bits}">
-            {{ i.bits }}b
-          </span>
-        </div>
-      </div>
-
-      <div class="tests-link">
-        <ul>
-          <li>
-            <a class="is-pulled-right" @click="fireTests()">
-              Lancer les tests &nbsp;
-              <i class="fas fa-vial"></i>
-            </a>
-          </li>
-          <li>
-            <a class="is-pulled-right" @click="firePi()">
-              Approximation de Pi
-            </a>
-          </li>
-        </ul>
-      </div>
+    <div class="header">
+      <h1><span class="manager">Algo'</span>num</h1>
+      <p>
+        Tp2: À la recherche des racines perdues. <br>
+        Featuring Newton (Isaac de son prénom)</p>
     </div>
-  </section>
 
 
-  <section>
-    <div class="columns is-multiline is-centered is-variable is-8">
-      <div v-for="area in areas" class="column" :class="bits.bits == 128 ? 'is-12' : 'is-6'">
-        <div class="box data-area">
+    <section class="section">
+      <div class="columns is-variable is-8">
 
-          <div class="columns is-mobile">
+        <div class="column is-7 ">
+          <div id="calculator"></div>
+        </div>
 
-            <div class="column is-11" :style="!verbose ? 'height: 75px' : ''">
-              <div v-for="field in area.fields">
-                <div class="columns is-gapless data-line">
+        <div class="column">
+          <div id="app">
 
-                  <div class="column is-2 data-labels">
-                    <a class="button is-static data-label" v-if="verbose" :class="inputsSize">
-                      {{ field.name }}:
-                    </a>
-                  </div>
-
-                  <div class="column is-10">
-                    <p v-if="field.name === 'Valeur'" class="control">
-                      <input class="input "
-                             :class="[inputsSize, {'is-danger':area.invalid}, {'result':area.id === 'C'}]"
-                             v-model="area.input"
-                             :readonly="area.id === 'C'"
-                             type="number" step="0.1" placeholder="ex. 263.3">
-                    </p>
-                    <p v-else-if="verbose" class="control">
-                      <input class="input result"
-                             :class="inputsSize"
-                             :value="field.value"
-                             type="text"
-                             readonly>
-                    </p>
-                  </div>
-
-                  <div class="column is-1">
-                    <p v-if="field.name === 'Valeur'" class="control">
-                      <a class="button is-static" :class="inputsSize">
-                        {{ field.size }}
-                      </a>
-                    </p>
-                    <p v-if="field.name === 'IEEE754' && verbose" class="control">
-                      <a class="button is-info"
-                         :class="inputsSize"
-                         @click="binaryToClipboard(field.value)">
-                        <i class="far fa-copy"></i>
-                      </a>
-                    </p>
-                  </div>
-
-                </div>
+            <div class="functions">
+              <div class="buttons has-addons">
+                <span v-for="(f, i) in functions"
+                      :key="i"
+                      @click="setFunction(f)"
+                      class="button"
+                      :class="{'is-info': func.desmos === f.desmos}">
+                  <b>{{ f.simple }}</b>
+                </span>
               </div>
+              <a class="is-info" @click="showModal()">Trouver les racines</a>
             </div>
-          </div>
 
-          <div class="ieee-detail content" :class="inputsSize">
-            <div class="sign">
-              <h5 class="is-bold">S</h5>
-              <p class="display">{{area.sign}}</p>
-              <p class="converted-value" v-if="area.sign">
-                <i v-if="area.sign === '1'" class="fas fa-minus"></i>
-                <i v-else class="fas fa-plus"></i>
+            <br>
+
+
+            <div class="field a-field has-addons">
+              <p class="control">
+                <a class="button is-static"><b>a</b></a>
+              </p>
+              <p class="control">
+                <input v-model="a"
+                       :disabled="!input"
+                       class="input"
+                       type="number"
+                       step="0.1">
+              </p>
+              <p class="control">
+                <a v-if="input"
+                   class="button is-info"
+                   @click="start()">Go</a>
+                <a v-else
+                   :disabled="idx === lines.length"
+                   class="button is-primary"
+                   @click="next()">Next</a>
               </p>
             </div>
-            <div class="exponent">
-              <h5 class="is-bold">Exponsant</h5>
-              <p class="display">{{area.exponent}}</p>
-              <p class="converted-value" v-if="area.exponent">{{ eBitNumber(area) }}</p>
+            <div class="field a-field has-addons">
+              <p class="control">
+                <a class="button is-static"><b>Erreur: &nbsp; 1e -</b></a>
+              </p>
+              <p class="control">
+                <input v-model="precision"
+                       :disabled="!input"
+                       class="input precision"
+                       type="number"
+                       :step="1">
+              </p>
             </div>
-            <div class="hidden-bit-dot-mantissa">
-              <div class="hidden-bit">
-                <h5 class="is-bold is-invisible">hidden</h5>
-                <p class="display">{{ hiddenBitValidation(area.input) }}</p>
-                <p class=""></p>
+            <button v-if="showNext || idx === lines.length"
+                    class="button is-danger"
+                    @click="reset()">Reset
+            </button>
+
+            <br>
+            <br>
+
+            <table v-if="steps.length" class="table is-small">
+              <thead>
+              <tr>
+                <th>Itération</th>
+                <th>a</th>
+                <th>A</th>
+                <th>delta</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(step, i) in steps" :keys="i">
+                <th>{{i + 1}}</th>
+                <td>{{ step.a }}</td>
+                <td>{{ step.A }}</td>
+                <td>{{ Math.abs(step.a - step.A) }}</td>
+              </tr>
+              </tbody>
+
+            </table>
+
+
+            <div class="modal content" :class="{'is-active': modal}">
+              <div class="modal-background"></div>
+              <div class="modal-content box">
+
+                <ul>
+                  <li v-for="root in roots">{{root}}</li>
+                </ul>
+
               </div>
-              <div class="dot">
-                <h5 class="is-bold is-invisible">hidden</h5>
-                <p class="">.</p>
-                <p class=""></p>
-              </div>
-              <div class="mantissa">
-                <h5 class="is-bold">Mantisse</h5>
-                <p class="display">{{area.mantissa}}</p>
-                <p class="converted-value" v-if="area.mantissa"></p>
-              </div>
+              <button class="modal-close is-large" aria-label="close" @click="hideModal()">
+              </button>
             </div>
+
           </div>
         </div>
 
-        <div v-if="area.id === 'A'" class="opperation-selection buttons has-addons"
-             :class="bits.bits == '128' ? 'horizontal' : 'vertical'">
-          <span v-for="i in opperations"
-                @click="setOpperation(i)"
-                class="is-outlined button"
-                :class="[{'is-selected':opperation == i}, opperationBtnColor]">
-            <i class="fas" :class="`fa-${i}`"></i>
-          </span>
-        </div>
-
-        <div v-if="area.id === 'B' && opperation"
-             class="equals-sign"
-             :class="bits.bits == '128' ? 'eq-horizontal' : 'eq-vertical'">
-          <span>
-            <i class="fas fa-equals"></i>
-          </span>
-        </div>
-
-
       </div>
-    </div>
-  </section>
+    </section>
 
 
-  <div class="modal content" :class="{'is-active': bordel}">
-    <div class="modal-background"></div>
-    <div class="modal-content box">
-      <h2>Algorithmes numériques:</h2>
-      <h3>Codage de nombres & IEEE754-2008</h3>
-      <small style="float: right;">11 mars 2019</small>
-      <p style="font-weight: bold">Réalisé par (INF2b):</p>
+    <section class="section">
+
+      <b>Groupe B4:</b>
       <ul>
-        <li>Nathan Latino</li>
         <li>Tristan Seuret</li>
-        <li>Jonas</li>
+        <li>Nathan Latino</li>
+        <li>Jonas Vallat</li>
         <li>Sol Rosca</li>
       </ul>
-      <h5>Contextualisation</h5>
-      <p>
-        Ce TP traite du codage de nombres réels. Le cahier des charges était le suivant:
-      </p>
-        <ul>
-          <li><span style="color:green">Coder les floatants pour un nombre flottant sur m bits donnés par l’utilisateur.</span> <span style="color:red">La valeur de d est à trouver à la volée</span></li>
-          <li><span style="color:green">Implémentez l’addition</span></li>
-          <li><span style="color:green">Implémentez soustraction,multiplication, division etpuissance</span></li>
-          <li><span style="color:green">Trouvez une approximation de π</span></li>
-        </ul>
-      <h5>Méthodologie de développement</h5>
-      <p>
-        Dans un premier temps l'idée était de cerner le fonctionnement de la norme IEEE754 et sa révision de 2008.
-        Une fois le problème assimilé, un premier jet d'implémentation des différentes étapes a rendu possible l'établissement d'une architecture logiciel
-        plus adaptée au problème. À partir de là les ajouts ont été incrémentaux:
-      </p>
+
+      <h1>Contextualisation</h1>
+      <p>Le présent laboratoire traite de la résolution d’équation. Il était possible de développer un
+        algorithme de résolution d’équation selon l’une des trois méthodes suivantes :</p>
       <ul>
-        <li>Implémentation de la conversion basique</li>
-        <li>Mise au point d'une série de tests contre des valeurs générés par <a href="https://babbage.cs.qc.cuny.edu/IEEE-754/">ce convertisseur en ligne</a></li>
-        <li>Implémentation de l'addition</li>
-        <li>Implémentation de l'multiplication</li>
-        <li>Implémentation de l'division</li>
-        <li>Implémentation de l'soustraction</li>
-        <li>Developpement de l'interface</li>
-        <li>Approximation de Pi</li>
-        <li>Réaliser que le nombre de bits codables étaint dynamique et non statiques</li>
+        <li>Méthode dichotomique</li>
+        <li>Méthode de la tangeante</li>
+        <li>Méthode du point fixe</li>
       </ul>
-      <h5>Conclusion</h5>
-
-      <p>
-        Ce projet fut particulièrement interessant, conceptuellement, mais aussi au niveau du codage
-        qui est probablement le code le plus "technique" et le plus soutenu au niveau du besoin de cohérence
-        des choix faits. Malheureusement les contraintes de temps ne nous ont pas permis de faire une
-        dernière itération de refactor du code qui sera probablement faite après la remise du projet
-        pour le sport et sera trouvable sur le <a href="https://github.com/RoscaS/algonum-tp1">répo github du projet</a>.
-        Pour la même raison ce rapport n'est qu'une ébauche et nous nous en excusons.
+      <p>Nous avons choisi d’implémenter la méthode de la tangeante (aussi dit “méthode de Newton”) par
+        proposition de l’enseignant.<br>
+        Le cahier des charges ne demandait la démonstration que pour deux fonctions :</p>
+      <ul>
+        <li>Sin(x) - x / 13</li>
+        <li>x / (1 - x<sup>2</sup>)</li>
+      </ul>
+      <h1>Méthodologie de développement</h1>
+      <h2>Approche du problème</h2>
+      <p>La première étape pour résoudre ce problème a été de tester la méthodologie de Newton (tangente).
+        Plusieurs tests ont été fait graphiquement avec des formules basique pour comprendre
+        l’algorithme.</p>
+      <h2>Méthodologie de travail</h2>
+      <p>Tout d’abord, il a fallu trouver une solution permettant de dessiner des graphiques. Pour cela,
+        l’API
+        proposée par Desmos convient parfaitement aux besoin du cahier des charges.<br>
+        Ainsi, le projet est découpé en deux parties, front et back-end, ce qui permet de répartir
+        facilement
+        le travail entre les collaborateurs.</p>
+      <h3>Recherche de racine via la méthode de
+        Newton</h3>
+      <p>Pour trouver toutes les racines d’une fonction, l’algoritme doit parcourir l’axe des x avec une
+        certaine granularité, et chercher la racine correspondant à chacun de ces points d’entrée.</p>
+      <p>Pour éviter les doublons, une vérification est faite sur les données pour que la différence de la
+        valeur avec epsilon et la valeur soit plus grande.<br>
+        pour que le delta entre la valeur actuelle et les valeurs déjà présentes soit supérieur à epsilon
       </p>
+      <h1>Conclusion</h1>
+      <p>Le cahier des charges est respecté. L’application permet de trouver tous les 0 de la fonction dans
+        l’intervalle [-100;100[ (voire plus loin) ainsi que de décomposer une recherche.
+      <h3>Gestion de la précision</h3>
+      <p>Dans les cas où la valeur de départ est d’un ordre de grandeur trop élevé ( supérieure à ~20), le
+        delta entre les deux points qui permettent de calculer la pente de la tangeante devenait trop petit.
+        Ainsi, il a fallu adapter ce delta en fonction de l’ordre de grandeur de la valeur fournie de cette
+        façon :</p>
+      <p><strong>Précision de base</strong> : 10<sup>-15</sup><br>
+        <strong>Adapté grâce à la méthode suivante</strong> : <em>précision</em> + log<sub>10</sub>(|<em>valeur</em>|)
+      </p>
+      <blockquote>
+        <p>Uniquement dans les cas où |<em>valeur</em>| est supérieur à 1<br>
+          thode de Newton pour une valeur donnée, pour autant que celle-ci atteigne un zéro.</p>
+      </blockquote>
+      <h1>Bibliothèque</h1>
+      <p>Le rendu de cette application se base sur l’API desmos.</p>
+    </section>
 
-      <h5>Sources</h5>
-      <ul style="margin-bottom: 50px">
-        <li>Cours du prof Gobron</li>
-        <li><a href="https://en.wikipedia.org/wiki/IEEE_754">Wikipedia</a></li>
-        <li><a href="https://www.exploringbinary.com/correct-decimal-to-floating-point-using-big-integers/">exploringbinary.com</a></li>
-        <li><a href="http://sandbox.mc.edu/~bennet/cs110/flt/dtof.html">sandbox.mc.edu: float to decimal</a></li>
-        <li><a href="http://sandbox.mc.edu/~bennet/cs110/flt/ftod.html">sandbox.mc.edu: decimal to float</a></li>
-        <li><a href="https://www.youtube.com/watch?v=8afbTaA-gOQ">India rules</a></li>
-        <li><a href="https://www.youtube.com/watch?v=LXF-wcoeT0o">Really they do</a></li>
-        <li><a href="https://www.h-schmidt.net/FloatConverter/IEEE754.html">Premier convertisseur</a></li>
-        <li><a href="https://babbage.cs.qc.cuny.edu/IEEE-754/">Second convertisseur (rounding variantes)</a></li>
-        <li><a href="https://google.com">Le bon vieux Google</a></li>
-      </ul>
 
-    </div>
-    <button class="modal-close is-large" aria-label="close" @click="hideModal()">
-    </button>
   </div>
-
-
 </div>
 
 
-<script src="static/js/bigInteger.min.js"></script>
 <script src="core/constant.js"></script>
-<script src="core/helpers.js"></script>
-<script src="core/tools.js"></script>
-<script src="core/Binary.js"></script>
-<script src="core/test.js"></script>
-<script src="core/main.js"></script>
+<script src="core/Plot.js"></script>
+<script src="core/NewtonTangent.js"></script>
 <script src="vueApp.js"></script>
-<script src="core/Line.js"></script>
 </body>
 </html>
