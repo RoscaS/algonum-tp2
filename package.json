@@ -1,5 +1,0 @@
-{
-  "scripts": {
-    "start": "browser-sync start --server 'src' --files 'src' --single"
-  }
-}
